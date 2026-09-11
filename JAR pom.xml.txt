@@ -1,0 +1,139 @@
+JAR pom.xml
+
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>as</groupId>
+    <artifactId>CampusMgmtSyatem</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <packaging>jar</packaging>
+
+    <name>JPROJECT</name>
+    <url>http://localhost:8080/FoodSystem</url>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>3.8.1</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
+                <configuration>
+                    <release>8</release>
+                </configuration>
+            </plugin>
+        </plugins>
+
+        <finalName>Food-system-xyz</finalName>
+    </build>
+
+</project>
+
+
+
+
+
+
+
+
+WAR pom.xml
+
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.example</groupId>
+  <artifactId>my-web-app</artifactId>
+  <packaging>war</packaging>
+  <version>0.0.1-SNAPSHOT</version>
+  <name>my-web-app Maven Webapp</name>
+  <url>http://maven.apache.org</url>
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+      <scope>test</scope>
+    </dependency>
+     <!-- Source: https://mvnrepository.com/artifact/javax.servlet/javax.servlet-api -->
+<dependency>
+    <groupId>javax.servlet</groupId>
+    <artifactId>javax.servlet-api</artifactId>
+    <version>4.0.1</version>
+    <scope>provided</scope>
+</dependency>
+  </dependencies>
+  <build>
+    <finalName>my-web-app</finalName>
+    
+  </build>
+</project>
+
+
+
+
+
+
+dockerfile
+
+For java project
+
+# Base image with JDK
+FROM openjdk:17-jdk-slim
+
+# Set working directory inside container
+WORKDIR /app
+
+# Copy your built JAR file (replace with actual name)
+COPY target/<YOUR_JAR_FILE>.jar app.jar
+
+# Expose the port your app runs on
+EXPOSE 8080
+
+# Run the JAR
+ENTRYPOINT ["java", "-jar", "app.jar"]
+
+
+For web project
+# Base image with Tomcat
+FROM tomcat:9.0-jdk17-openjdk
+
+# Maintainer info (optional)
+LABEL maintainer="<YOUR_NAME_OR_EMAIL>"
+
+# Remove default ROOT app
+RUN rm -rf /usr/local/tomcat/webapps/ROOT
+
+# Copy your WAR file into Tomcat (replace with actual name)
+COPY target/<YOUR_WAR_FILE>.war /usr/local/tomcat/webapps/ROOT.war
+
+# Expose Tomcat port
+EXPOSE 8080
+
+# Start Tomcat
+CMD ["catalina.sh", "run"]
+
+
+
+
+
+
+
