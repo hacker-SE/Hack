@@ -16,7 +16,7 @@ git add .
 
 c> Bash
 
-git commit -n "first commit"
+git commit -m "first commit"
 
 <> Bash
 
@@ -24,7 +24,7 @@ git branch -M main
 
 Bash
 
-git renote add origin https://github.com/YOUR_USERNAME/CampusMgntSystem.git
+git remote add origin https://github.com/YOUR_USERNAME/CampusMgntSystem.git
 
 (> Bash
 
