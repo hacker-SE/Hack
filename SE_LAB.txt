@@ -1,0 +1,578 @@
+=================== START ===================
+
+# Git Full Cheat Sheet
+## Software Engineering – Lab Internal I
+
+---
+
+# SECTION 1: INITIAL SETUP
+
+## 1.1 Check Git Version
+git --version
+
+## 1.2 Configure Git Identity (One-Time)
+git config --global user.name "Your Name"
+git config --global user.email "your_email@example.com"
+git config --global init.defaultBranch main
+
+## 1.3 View All Configurations
+git config --list
+
+---
+
+# SECTION 2: REPOSITORY INITIALIZATION
+
+## 2.1 Initialize New Repository
+cd /path/to/project
+git init
+git status
+
+## 2.2 Add Remote Repository
+git remote add origin https://github.com/<username>/<repo>.git
+git remote -v
+
+## 2.3 If Remote Already Exists
+git remote set-url origin https://github.com/<username>/<repo>.git
+
+## 2.4 Remove and Re-Add Remote
+git remote remove origin
+git remote add origin https://github.com/<username>/<repo>.git
+
+## 2.5 First Commit and Push
+git add .
+git status
+git commit -m "Initial commit"
+git branch -M main
+git push -u origin main
+
+---
+
+# SECTION 3: CLONING A REPOSITORY
+
+## 3.1 HTTPS Clone
+git clone https://github.com/<username>/<repo>.git
+cd <repo>
+
+## 3.2 SSH Clone
+git clone git@github.com:<username>/<repo>.git
+
+## 3.3 Verify Clone
+git status
+git remote -v
+git branch -a
+
+---
+
+# SECTION 4: DAILY WORKFLOW
+
+## 4.1 Standard Add → Commit → Push
+git status
+git diff
+git add <file>
+git add .
+git status
+git commit -m "Meaningful commit message"
+git push
+
+## 4.2 Stage Specific Files
+git add file1.txt file2.txt
+
+---
+
+# SECTION 5: REMOTE REPOSITORY MANAGEMENT
+
+git remote -v                          # List remotes with URLs
+git remote add origin <url>            # Add new remote
+git remote set-url origin <new-url>    # Change remote URL
+git remote remove origin               # Remove remote
+git remote rename origin upstream      # Rename remote
+git remote show origin                 # Detailed remote info
+git remote prune origin                # Remove outdated remote branches
+git fetch origin                       # Fetch without merging
+git fetch origin <branch_name>         # Fetch specific branch
+git fetch upstream                     # Fetch from renamed remote
+git pull origin main                   # Fetch + merge
+git pull --rebase origin main          # Fetch + rebase
+git push origin main                   # Push to main
+git push -u origin <branch>            # Push and set upstream
+git push --set-upstream origin <branch>
+git push --force-with-lease            # Safe force push
+git push origin --delete <branch>      # Delete remote branch
+git push --tags                        # Push all tags
+git push origin v1.0                   # Push specific tag
+
+---
+
+# SECTION 6: BRANCHING
+
+## 6.1 Listing Branches
+git branch                # Local branches
+git branch -a             # All local + remote branches
+git branch -r             # Remote branches only
+
+## 6.2 Creating Branches
+git branch <branch-name>              # Create only
+git checkout <branch-name>            # Switch to existing
+git checkout -b <branch-name>         # Create + switch
+git switch <branch-name>              # Switch (newer syntax)
+git switch -c <branch-name>           # Create + switch
+
+## 6.3 Renaming & Deleting
+git branch -m <old-name> <new-name>   # Rename branch
+git branch -d <branch-name>           # Delete (safe, merged only)
+git branch -D <branch-name>           # Force delete (unmerged)
+git branch -d branch1 branch2 branch3 # Delete multiple
+
+## 6.4 Checking Merge Status
+git branch --merged                   # List merged branches
+git branch --no-merged                # List unmerged branches
+
+---
+
+# SECTION 7: MERGING & REBASING
+
+## 7.1 Merge
+git checkout main
+git merge feature/homepage
+git merge --abort                     # Abort merge in progress
+
+## 7.2 Rebase
+git checkout feature/homepage
+git rebase main
+git rebase origin/main
+git rebase --continue                 # After resolving conflicts
+git rebase --abort                    # Cancel rebase
+git rebase -i HEAD~3                  # Interactive rebase (3 commits)
+
+---
+
+# SECTION 8: VIEWING HISTORY & CHANGES
+
+git status                            # Working tree status
+git diff                              # Unstaged changes
+git diff --staged                     # Staged changes
+git diff --cached                     # Same as --staged
+git diff <branch1> <branch2>          # Compare branches
+git diff main..feature                # Compare branch differences
+git log                               # Full commit history
+git log --oneline                     # Condensed history
+git log --oneline --graph --all       # Visual tree of all branches
+git log main..feature                 # Commits in feature not in main
+git log --oneline <branch1>..<branch2>
+git show <commit-hash>                # Details of a commit
+git show fa582a1                      # Show specific commit
+git blame <file>                      # Who changed each line
+git blame -L 25,25 script.py          # Who changed line 25
+
+---
+
+# SECTION 9: UNDOING CHANGES
+
+## 9.1 Discard / Restore
+git restore <file>                    # Discard working directory changes
+git restore --staged <file>           # Unstage file (keep changes)
+git checkout -- <file>                # Old syntax for discard
+
+## 9.2 Reset
+git reset <file>                      # Unstage file
+git reset HEAD~1                      # Undo last commit (mixed)
+git reset --soft HEAD~1               # Undo commit, keep staged
+git reset --mixed HEAD~1              # Undo commit, keep unstaged
+git reset --hard HEAD~1               # Undo commit, discard changes
+
+## 9.3 Revert
+git revert <commit-hash>              # Undo commit via new commit
+git revert HEAD                       # Revert latest commit
+
+## 9.4 Amend
+git commit --amend -m "Corrected message"
+git commit --amend --no-edit          # Amend without changing message
+
+---
+
+# SECTION 10: REMOVING FILES FROM TRACKING
+
+git rm --cached <file>                # Untrack file, keep locally
+git rm -r --cached .                  # Untrack all cached files
+git rm <file>                         # Delete file + untrack
+
+## .gitignore Setup
+git add .gitignore
+git commit -m "Add .gitignore"
+
+### Sample .gitignore Contents
+target/
+*.class
+*.war
+.settings/
+.classpath
+.project
+*.log
+node_modules/
+temp/
+secret_file.txt
+*.bak
+
+---
+
+# SECTION 11: STASHING
+
+git stash                             # Save uncommitted changes
+git stash list                        # List all stashes
+git stash apply                       # Restore (keep stash)
+git stash pop                         # Restore + remove stash
+git stash drop                        # Delete a stash
+git stash clear                       # Delete all stashes
+
+## Typical Stash Workflow
+git stash
+git switch <another-branch>
+# do urgent work
+git switch main
+git stash apply
+
+---
+
+# SECTION 12: TAGS
+
+git tag                               # List all tags
+git tag v1.0                          # Create lightweight tag
+git tag -a v1.0 -m "Release 1.0"      # Create annotated tag
+git push origin v1.0                  # Push specific tag
+git push --tags                       # Push all tags
+git tag -d v1.0                       # Delete local tag
+git push origin --delete v1.0         # Delete remote tag
+
+---
+
+# SECTION 13: RECOVERY
+
+git reflog                            # View reference log (recovery)
+git checkout <commit-hash>            # Checkout specific commit
+git checkout -b recovery-branch <commit-hash>
+git checkout -b feature-ui <hash>     # Recover deleted branch
+
+---
+
+# SECTION 14: SSH SETUP FOR GITHUB
+
+ssh-keygen -t ed25519 -C "your_email@example.com"
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/id_ed25519
+cat ~/.ssh/id_ed25519.pub
+ssh -T git@github.com
+git remote set-url origin git@github.com:<username>/<repo>.git
+
+---
+
+# SECTION 15: FIXING AUTHENTICATION (403 ERROR)
+
+## Clear Cached Credentials (Windows)
+printf "protocol=https\nhost=github.com\n" | git credential-manager erase
+
+## Pin Account Per Repository
+git config credential.https://github.com.username <username>
+
+## Retry Push
+git push -u origin main
+
+---
+
+# SECTION 16: PATCHES
+
+git format-patch -1 HEAD              # Create patch from last commit
+git format-patch -3                   # Create patches from last 3 commits
+git format-patch <base>..HEAD         # Range of commits
+git apply my-changes.patch            # Apply patch
+git apply --check my-changes.patch    # Verify patch applies cleanly
+git am 0001-Your-commit.patch         # Apply patch with commit
+
+---
+
+# SECTION 17: CONFLICT RESOLUTION
+
+## 17.1 During Merge
+git status                            # Identify conflicted files
+git diff                              # View conflict markers
+# Edit file: remove <<<<<<<, =======, >>>>>>>
+git add <resolved-file>
+git commit
+git merge --abort                     # If needed
+
+## 17.2 During Rebase
+git status
+# Edit conflicted files
+git add <resolved-file>
+git rebase --continue
+git rebase --abort                    # If needed
+
+## Conflict Markers Explained
+<<<<<<< HEAD
+Your version
+=======
+Other branch version
+>>>>>>> feature/branch
+
+---
+
+# SECTION 18: COLLABORATION (FORK & PULL REQUEST)
+
+## 18.1 Fork Workflow
+# Step 1: Fork on GitHub UI
+# Step 2: Clone your fork
+git clone https://github.com/your-username/awesome-project.git
+cd awesome-project
+
+## 18.2 Add Upstream Remote
+git remote add upstream https://github.com/Person1/awesome-project.git
+git remote -v
+
+## 18.3 Create Branch and Work
+git checkout -b feature-branch
+# make changes
+git add .
+git commit -m "Changes"
+git push origin feature-branch
+
+## 18.4 Sync with Upstream
+git fetch upstream
+git checkout main
+git merge upstream/main
+git push origin main
+
+## 18.5 Create Pull Request
+# Go to GitHub UI → Pull Requests → New Pull Request
+
+## 18.6 Merge Pull Request (Owner)
+# GitHub UI → Review → Merge Pull Request
+
+---
+
+# SECTION 19: SENSITIVE FILE REMOVAL FROM HISTORY
+
+git filter-branch --force --index-filter \
+"git rm --cached --ignore-unmatch secrets.txt" \
+--prune-empty --tag-name-filter cat -- --all
+
+---
+
+# SECTION 20: SCENARIO-BASED QUICK REFERENCE
+
+| Scenario | Command |
+|----------|---------|
+| Discard local changes | git restore <file> |
+| Unstage file without losing changes | git restore --staged <file> |
+| Fix last commit message (not pushed) | git commit --amend -m "Corrected message" |
+| View readable history | git log --oneline |
+| Set global name/email | git config --global user.name "..." |
+| View unstaged changes | git diff |
+| Switch to branch | git switch feature/login |
+| Recover deleted branch | git reflog → git checkout -b <branch> <hash> |
+| Push local commits | git push origin main |
+| Fetch without merging | git fetch origin |
+| Create feature branch | git checkout -b search-filter |
+| Remove API key from history | git filter-branch ... |
+| List all branches | git branch -a |
+| Merge feature branch | git checkout main && git merge feature/signup |
+| Resolve conflict | Edit file → git add → git commit |
+| Ignore .log / node_modules | Create .gitignore |
+| Who changed line 25 | git blame -L 25,25 script.py |
+| Save work temporarily | git stash |
+| Restore stashed work | git stash apply |
+| Delete local branch | git branch -d feature/test |
+| Force delete unmerged branch | git branch -D feature-experiment |
+| Check merged branches | git branch --merged |
+| Delete multiple branches | git branch -d feature-a feature-b feature-c |
+| Undo pushed commit safely | git revert <hash> |
+| Undo last commit (not pushed) | git reset --soft HEAD~1 |
+| Combine correction with previous commit | git add <file> && git commit --amend --no-edit |
+| Compare branches | git diff main..feature |
+| See commits only in feature | git log main..feature --oneline |
+| Force push after rebase | git push --force-with-lease |
+| Rename branch | git branch -m <old> <new> |
+| Create + push tag | git tag v1.0 && git push origin v1.0 |
+
+---
+
+# SECTION 21: FULL END-TO-END WORKFLOW
+
+## 21.1 Clone → Branch → Commit → Push → Merge
+
+# 1. Clone
+git clone https://github.com/<username>/<repo>.git
+cd <repo>
+
+# 2. Verify
+git status
+git remote -v
+git branch -a
+
+# 3. Create feature branch
+git checkout -b feature/homepage
+
+# 4. Make changes
+git status
+git diff
+
+# 5. Stage & commit
+git add .
+git commit -m "Add homepage feature"
+
+# 6. Sync with remote
+git fetch origin
+git pull --rebase origin main
+
+# 7. Push feature branch
+git push -u origin feature/homepage
+
+# 8. Merge into main
+git checkout main
+git pull origin main
+git merge feature/homepage
+
+# 9. Push main
+git push origin main
+
+# 10. Tag release
+git tag v1.0
+git push origin v1.0
+
+# 11. Cleanup
+git branch -d feature/homepage
+git push origin --delete feature/homepage
+
+---
+
+# SECTION 22: GIT COMMANDS BY CATEGORY
+
+## Setup
+git init
+git config --global user.name "..."
+git config --global user.email "..."
+git config --list
+
+## Remote
+git remote add origin <url>
+git remote -v
+git remote set-url origin <url>
+git remote remove origin
+git remote rename origin upstream
+git remote show origin
+git remote prune origin
+
+## Clone/Fetch/Pull/Push
+git clone <url>
+git fetch origin
+git fetch origin <branch>
+git pull origin main
+git pull --rebase origin main
+git push origin main
+git push -u origin <branch>
+git push --force-with-lease
+git push origin --delete <branch>
+
+## Branch
+git branch
+git branch -a
+git branch -r
+git branch <name>
+git checkout <name>
+git checkout -b <name>
+git switch <name>
+git switch -c <name>
+git branch -m <old> <new>
+git branch -d <name>
+git branch -D <name>
+git branch --merged
+
+## Stage/Commit
+git status
+git add <file>
+git add .
+git commit -m "msg"
+git commit --amend -m "corrected"
+
+## Merge/Rebase
+git merge <branch>
+git merge --abort
+git rebase main
+git rebase --continue
+git rebase --abort
+git rebase -i HEAD~3
+
+## View
+git diff
+git diff --staged
+git log
+git log --oneline
+git log --oneline --graph --all
+git show <hash>
+git blame <file>
+git reflog
+
+## Undo
+git restore <file>
+git restore --staged <file>
+git reset --soft HEAD~1
+git reset --mixed HEAD~1
+git reset --hard HEAD~1
+git revert <hash>
+
+## Cleanup
+git rm --cached <file>
+git rm -r --cached .
+git branch -d <branch>
+
+## Stash
+git stash
+git stash list
+git stash apply
+git stash pop
+git stash drop
+git stash clear
+
+## Tag
+git tag
+git tag v1.0
+git tag -a v1.0 -m "msg"
+git push origin v1.0
+git push --tags
+
+## Patch
+git format-patch -1 HEAD
+git apply my.patch
+git am 0001-commit.patch
+
+## SSH
+ssh-keygen -t ed25519 -C "email"
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/id_ed25519
+cat ~/.ssh/id_ed25519.pub
+ssh -T git@github.com
+
+---
+
+# SECTION 23: SEQUENCE SUMMARY
+
+SETUP → CLONE/INIT → REMOTE → BRANCH → EDIT
+  → STAGE → COMMIT → FETCH → REBASE
+  → PUSH → MERGE → TAG → CLEANUP → RECOVER (if needed)
+
+---
+
+# SECTION 24: KEY CONCEPTS
+
+1. Four Areas: Working Directory → Staging Area → Local Repo → Remote Repo
+2. HEAD points to the latest commit in the current branch
+3. origin = default remote name
+4. main = default branch name
+5. Merge preserves history; Rebase creates linear history
+6. Fetch downloads; Pull = Fetch + Merge
+7. Reset moves pointer back; Revert creates new undo commit
+8. Stash = temporary storage for uncommitted changes
+9. Reflog = safety net to recover lost commits
+10. .gitignore prevents unwanted files from being tracked
+
+---
+
+=================== END ===================
