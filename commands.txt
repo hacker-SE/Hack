@@ -1,0 +1,31 @@
+<> Bash
+
+git init
+
+u> Bash
+
+git config -- global user.neme "Your Nane"
+
+<> Bash
+
+git config -- global user.email "your@email.com"
+
+Bash
+
+git add .
+
+c> Bash
+
+git comit -n "first commit"
+
+<> Bash
+
+git branch -M main
+
+Bash
+
+git renote add origin https://github.com/YOUR_USERNAME/CampusMgntSystem.git
+
+(> Bash
+
+git push -u origin main
