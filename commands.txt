@@ -16,7 +16,7 @@ git add .
 
 c> Bash
 
-git comit -n "first commit"
+git commit -n "first commit"
 
 <> Bash
 
