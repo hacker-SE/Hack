@@ -1,5 +1,20 @@
 DOCKER BUILD → DOCKER HUB → RUN BOTH CONTAINERS
 
+For war file
+FROM tomcat:9.0-jdk17-temurin
+
+LABEL maintainer="vrath1707"
+
+RUN rm -rf /usr/local/tomcat/webapps/ROOT
+
+COPY target/<filename.war>/usr/local/tomcat/webapps/ROOT.war
+
+EXPOSE 8080
+
+CMD ["catalina.sh", "run"]
+
+
+
 Project folder:
 C:\Users\vrath\git\carrepo
 
