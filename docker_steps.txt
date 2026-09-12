@@ -8,7 +8,16 @@ LABEL maintainer="vrath1707"
 RUN rm -rf /usr/local/tomcat/webapps/ROOT
 
 COPY target/<filename.war>/usr/local/tomcat/webapps/ROOT.war
+For jar file 
+FROM eclipse-temurin:17-jdk
 
+LABEL maintainer="vrath1707"
+
+COPY target/exam-system.jar app.jar
+
+EXPOSE 8080
+
+CMD ["java", "-jar", "app.jar"]
 EXPOSE 8080
 
 CMD ["catalina.sh", "run"]
