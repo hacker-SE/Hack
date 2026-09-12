@@ -1,0 +1,151 @@
+DOCKER BUILD → DOCKER HUB → RUN BOTH CONTAINERS
+
+Project folder:
+C:\Users\vrath\git\carrepo
+
+1. BUILD THE DOCKER IMAGE
+-------------------------
+docker build -t lmsimage:latest .
+
+Check the image:
+docker images
+
+You should see:
+lmsimage    latest
+
+2. RUN THE LOCAL IMAGE
+----------------------
+docker run -d -p 7089:8080 --name localcontainer lmsimage:latest
+
+Check:
+docker ps
+
+Open:
+http://localhost:7089
+
+3. TAG THE IMAGE FOR DOCKER HUB
+--------------------------------
+docker tag lmsimage:latest vrath1707/lmsimage:latest
+
+Check:
+docker images
+
+You should see:
+lmsimage                  latest
+vrath1707/lmsimage       latest
+
+Both should have the same IMAGE ID.
+
+4. LOGIN TO DOCKER HUB
+----------------------
+docker login
+
+Enter your Docker Hub username and password/access token.
+
+You should see:
+Login Succeeded
+
+5. PUSH THE IMAGE TO DOCKER HUB
+--------------------------------
+docker push vrath1707/lmsimage:latest
+
+Wait until the upload finishes.
+
+6. PULL THE IMAGE FROM DOCKER HUB
+----------------------------------
+docker pull vrath1707/lmsimage:latest
+
+This downloads/updates the image from Docker Hub.
+
+7. RUN THE DOCKER HUB IMAGE
+---------------------------
+Use a different host port because 7089 is already being used by the local container.
+
+docker run -d -p 7090:8080 --name hubcontainer vrath1707/lmsimage:latest
+
+8. CHECK BOTH CONTAINERS
+------------------------
+docker ps
+
+You should see something like:
+
+localcontainer    lmsimage:latest              0.0.0.0:7089->8080/tcp
+hubcontainer      vrath1707/lmsimage:latest    0.0.0.0:7090->8080/tcp
+
+9. OPEN BOTH APPLICATIONS
+-------------------------
+Local image:
+http://localhost:7089
+
+Docker Hub image:
+http://localhost:7090
+
+10. CHECK LOGS IF THERE IS A PROBLEM
+-------------------------------------
+Local container:
+docker logs localcontainer
+
+Docker Hub container:
+docker logs hubcontainer
+
+Look for:
+Starting ProtocolHandler ["http-nio-8080"]
+Server startup
+Deployment of web application archive ... ROOT.war
+
+COMPLETE COMMAND SEQUENCE
+-------------------------
+cd C:\Users\vrath\git\carrepo
+
+docker build -t lmsimage:latest .
+
+docker run -d -p 7089:8080 --name localcontainer lmsimage:latest
+
+docker tag lmsimage:latest vrath1707/lmsimage:latest
+
+docker login
+
+docker push vrath1707/lmsimage:latest
+
+docker pull vrath1707/lmsimage:latest
+
+docker run -d -p 7090:8080 --name hubcontainer vrath1707/lmsimage:latest
+
+docker ps
+
+URLs:
+Local container:    http://localhost:7089
+Docker Hub container: http://localhost:7090
+
+IMPORTANT:
+- docker build = creates the image
+- docker tag = gives the image the Docker Hub name
+- docker push = uploads the image to Docker Hub
+- docker pull = downloads the image from Docker Hub
+- docker run = creates and starts a container from an image
+- You push IMAGES to Docker Hub, not containers.
+
+FLOW:
+Dockerfile
+   ↓
+docker build
+   ↓
+lmsimage:latest
+   ↓
+docker run
+   ↓
+LOCAL CONTAINER
+   ↓
+docker tag
+   ↓
+vrath1707/lmsimage:latest
+   ↓
+docker push
+   ↓
+DOCKER HUB
+   ↓
+docker pull
+   ↓
+docker run
+   ↓
+DOCKER HUB CONTAINER
