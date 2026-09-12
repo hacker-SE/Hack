@@ -1,0 +1,27 @@
+FROM tomcat:9.0-jdk17-temurin
+LABEL maintainer="vrath1707"
+RUN rm -rf /usr/local/tomcat/webapps/ROOT
+COPY target/bookcar.war /usr/local/tomcat/webapps/ROOT.war
+EXPOSE 8080
+CMD ["catalina.sh", "run"]
+
+git init
+git add .
+git commit -m "firstest commit"
+git Branch -M main
+git remote remove origin
+git remote -v
+git remote remove origin
+git remote add origin https://github.com/secollege2007/se_lab2
+git push -u origin main
+docker ps -a
+docker login
+docker build -t lmsimage .
+docker run -d -p 7089:8080 --name lmcontainer lmsimage
+docker rm --lmcontainer
+docker run -d -p 7089:8080 --name lmcontainer lmsimage
+docker ps
+docker images
+docker ps -a
+docker rm fc411eed58e72782dda9e75e531454d295e501bd754c97de7005aeb10e2e9b73
+docker run -d -p 7089:8080 --name lmcontainer lmsimage
