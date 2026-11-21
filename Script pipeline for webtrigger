@@ -1,0 +1,42 @@
+pipeline {
+    agent any
+
+    tools {
+        maven 'MAVEN_HOME'
+    }
+
+    stages {
+        stage('Check Maven') {
+            steps {
+                bat 'mvn -version'
+                bat 'java -version'
+            }
+        }
+
+        stage('Git Repo & Clean') {
+            steps {
+                bat 'if exist OLTRS rmdir /s /q OLTRS'
+                bat 'git clone https://github.com/archanareddyse/OLTRS.git'(please paste your url)
+                bat 'mvn clean -f OLTRS/pom.xml'
+            }
+        }
+
+        stage('Install') {
+            steps {
+                bat 'mvn install -f OLTRS/pom.xml'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                bat 'mvn test -f OLTRS/pom.xml'
+            }
+        }
+
+        stage('Package') {
+            steps {
+                bat 'mvn package -f OLTRS/pom.xml'
+            }
+        }
+    }
+}
