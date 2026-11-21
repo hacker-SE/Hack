@@ -6,6 +6,11 @@ and Docker are installed. - These examples use the nginx image as a
 simple test application. - Replace POD_NAME with the actual pod name
 shown by kubectl get pods. - Keep the same deployment name: hospital.
 
+
+
+docker Kubernetes  create cluster 
+
+
 ============================================================ 1. START
 AND CHECK MINIKUBE
 ============================================================
