@@ -1,0 +1,898 @@
+1)character-stuffing and bit stuffing.
+#include <stdio.h>
+#include <string.h>
+#define FLAG '$'
+#define ESC '\\'
+
+void characterStuffing(char *input) {
+    printf("Character Stuffed Output: %c", FLAG);
+    for (int i = 0; i < strlen(input); i++) {
+        if (input[i] == FLAG || input[i] == ESC) {
+            printf("%c", ESC);
+        }
+        printf("%c", input[i]);
+    }
+    printf("%c\n", FLAG);
+}
+
+void bitStuffing(char *input) {
+    printf("Bit Stuffed Output: 01111110 ");
+    int count = 0;
+    for (int i = 0; i < strlen(input); i++) {
+        if (input[i] == '1') {
+            count++;
+            printf("1");
+            if (count == 5) {
+                printf("0");
+                count = 0;
+            }
+        } else {
+            printf("0");
+            count = 0;
+        }
+    }
+    printf(" 01111110\n");
+}
+
+int main() {
+    int choice;
+    char input[100];
+    printf("Choose Framing Method:\n1. Character Stuffing\n2. Bit Stuffing\nEnter your choice: ");
+    scanf("%d", &choice);
+    getchar();
+    printf("Enter the data string: ");
+    fgets(input, sizeof(input), stdin);
+    input[strcspn(input, "\n")] = 0;
+    if (choice == 1) {
+        characterStuffing(input);
+    } else if (choice == 2) {
+        bitStuffing(input);
+    } else {
+        printf("Invalid choice!\n");
+    }
+    return 0;
+}
+
+output :
+Choose Framing Method:
+1. Character Stuffing
+2. Bit Stuffing
+Enter your choice: 1
+Enter the data string: A$B\C
+Character Stuffed Output: $A\$B\\C$
+
+Output (Bit Stuffing):
+Choose Framing Method:
+1. Character Stuffing
+2. Bit Stuffing
+Enter your choice: 2
+Enter the data string: 011111101
+Bit Stuffed Output: 01111110 0111110101 01111110
+
+2) CRC code
+#include<stdio.h>
+#include<string.h>
+#define N strlen(gen_poly)
+
+char data[28];
+char check_value[28];
+char gen_poly[10];
+int data_length, i, j;
+
+void XOR() {
+    for(j = 1; j < N; j++)
+        check_value[j] = ((check_value[j] == gen_poly[j]) ? '0' : '1');
+}
+
+void crc() {
+    for(i = 0; i < N; i++)
+        check_value[i] = data[i];
+    do {
+        if(check_value[0] == '1')
+            XOR();
+        for(j = 0; j < N - 1; j++)
+            check_value[j] = check_value[j + 1];
+        check_value[j] = data[i++];
+    } while(i <= data_length + N - 1);
+}
+
+void receiver() {
+    printf("Enter the received data: ");
+    scanf("%s", data);
+    printf("\n--------------\n");
+    printf("Data received: %s", data);
+    crc();
+    for(i = 0; (i < N - 1) && (check_value[i] != '1'); i++);
+    if(i < N - 1)
+        printf("\nError detected\n\n");
+    else
+        printf("\nNo error detected\n\n");
+}
+
+int main() {
+    printf("\nEnter data to be transmitted: ");
+    scanf("%s", data);
+    printf("\n Enter the Generating polynomial: ");
+    scanf("%s", gen_poly);
+    data_length = strlen(data);
+    for(i = data_length; i < data_length + N - 1; i++)
+        data[i] = '0';
+    printf("\n--");
+    printf("\n Data padded with n-1 zeros: %s", data);
+    printf("\n-----------");
+    crc();
+    printf("\nCRC or Check value is: %s", check_value);
+    for(i = data_length; i < data_length + N - 1; i++)
+        data[i] = check_value[i - data_length];
+    printf("\n--- ");
+    printf("\n Final data to be sent: %s", data);
+    printf("\n--------\n");
+    receiver();
+    return 0;
+}
+
+Output:
+Enter data to be transmitted: 1011001
+
+ Enter the Generating polynomial: 1101
+
+--
+ Data padded with n-1 zeros: 1011001000
+-----------
+CRC or Check value is: 110
+--- 
+ Final data to be sent: 1011001110
+--------
+Enter the received data: 1011001110
+
+--------------
+Data received: 1011001110
+No error detected
+
+3)Go-Back-N (HardCoded)
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <time.h>
+
+#define WINDOW_SIZE 4
+#define TOTAL_FRAMES 10
+#define TIMEOUT 3
+
+int send_frame(int frame) {
+    if (rand() % 5 == 0) {
+        printf("[Sender] Frame %d lost during transmission.\n", frame);
+        return 0;
+    }
+    printf("[Sender] Frame %d sent successfully.\n", frame);
+    return 1;
+}
+
+int receive_ack(int frame) {
+    if (rand() % 7 == 0) {
+        printf("[Receiver] ACK for Frame %d lost.\n", frame);
+        return 0;
+    }
+    printf("[Receiver] ACK for Frame %d received successfully.\n", frame);
+    return 1;
+}
+
+void sliding_window_protocol() {
+    int base = 0;
+    int next_frame = 0;
+    int acks[TOTAL_FRAMES] = {0};
+    time_t timers[TOTAL_FRAMES];
+
+    while (base < TOTAL_FRAMES) {
+        while (next_frame < base + WINDOW_SIZE && next_frame < TOTAL_FRAMES) {
+            if (!acks[next_frame]) {
+                send_frame(next_frame);
+                timers[next_frame] = time(NULL);
+            }
+            next_frame++;
+        }
+
+        for (int i = base; i < next_frame; i++) {
+            if (acks[i]) {
+                continue;
+            }
+            if (receive_ack(i)) {
+                acks[i] = 1;
+                while (base < TOTAL_FRAMES && acks[base]) {
+                    printf("[Sender] Sliding window. Base frame is now %d.\n", base + 1);
+                    base++;
+                }
+            } else {
+                if (difftime(time(NULL), timers[i]) > TIMEOUT) {
+                    printf("[Sender] Timeout for Frame %d. Resending all frames from %d.\n", i, base);
+                    next_frame = base;
+                    break;
+                }
+            }
+        }
+    }
+    printf("[Sender] All frames sent and acknowledged successfully.\n");
+}
+
+int main() {
+    srand(time(NULL));
+    printf("[Sender] Starting Sliding Window Protocol with Go-Back-N.\n");
+    sliding_window_protocol();
+    printf("[Sender] Transmission completed.\n");
+    return 0;
+}
+
+Output (Sample Run):
+[Sender] Starting Sliding Window Protocol with Go-Back-N.
+[Sender] Frame 0 sent successfully.
+[Sender] Frame 1 sent successfully.
+[Sender] Frame 2 sent successfully.
+[Sender] Frame 3 sent successfully.
+[Receiver] ACK for Frame 0 received successfully.
+[Sender] Sliding window. Base frame is now 1.
+[Receiver] ACK for Frame 1 received successfully.
+[Sender] Sliding window. Base frame is now 2.
+[Receiver] ACK for Frame 2 received successfully.
+[Sender] Sliding window. Base frame is now 3.
+[Receiver] ACK for Frame 3 received successfully.
+[Sender] Sliding window. Base frame is now 4.
+[Sender] Frame 4 sent successfully.
+[Sender] Frame 5 lost during transmission.
+[Sender] Frame 6 sent successfully.
+[Sender] Frame 7 sent successfully.
+...
+[Sender] All frames sent and acknowledged successfully.
+[Sender] Transmission completed.
+
+3)Go Back N (User Input)
+#include <stdio.h>
+int main() {
+    int n, w, i = 0;
+    printf("Enter number of frames: ");
+    scanf("%d", &n);
+    printf("Enter window size: ");
+    scanf("%d", &w);
+    while (i < n) {
+        printf("\nSending frames:\n");
+        for (int j = i; j < i + w && j < n; j++)
+            printf("Frame %d sent\n", j + 1);
+        printf("Enter last acknowledged frame: ");
+        int ack;
+        scanf("%d", &ack);
+        if (ack >= i + 1 && ack <= n)
+            i = ack;
+        else
+            printf("Timeout! Resending frames...\n");
+    }
+    printf("\nAll frames sent successfully!\n");
+    return 0;
+}
+
+Output:
+Enter number of frames: 5
+Enter window size: 3
+
+Sending frames:
+Frame 1 sent
+Frame 2 sent
+Frame 3 sent
+Enter last acknowledged frame: 2
+
+Sending frames:
+Frame 3 sent
+Frame 4 sent
+Frame 5 sent
+Enter last acknowledged frame: 0
+Timeout! Resending frames...
+
+Sending frames:
+Frame 3 sent
+Frame 4 sent
+Frame 5 sent
+Enter last acknowledged frame: 5
+
+All frames sent successfully!
+
+	
+4)subnet 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+unsigned int ipToInt(char* ip) {
+    unsigned int a, b, c, d;
+    sscanf(ip, "%u.%u.%u.%u", &a, &b, &c, &d);
+    return (a << 24) | (b << 16) | (c << 8) | d;
+}
+
+void intToIp(unsigned int ip, char* buffer) {
+    sprintf(buffer, "%u.%u.%u.%u", (ip >> 24) & 0xFF, (ip >> 16) & 0xFF, (ip >> 8) & 0xFF, ip & 0xFF);
+}
+
+unsigned int calculateSubnetMask(int prefixLength) {
+    return prefixLength == 0 ? 0 : ~((1 << (32 - prefixLength)) - 1);
+}
+
+int main() {
+    char ip[16];
+    int prefixLength, newPrefixLength;
+    unsigned int subnetMask, newSubnetMask, ipInt;
+    char buffer[16];
+
+    printf("Enter IP address (e.g., 192.168.1.0): ");
+    scanf("%s", ip);
+    printf("Enter current prefix length (e.g., 24): ");
+    scanf("%d", &prefixLength);
+
+    newPrefixLength = prefixLength + 1;
+    ipInt = ipToInt(ip);
+    subnetMask = calculateSubnetMask(prefixLength);
+    newSubnetMask = calculateSubnetMask(newPrefixLength);
+    int hostsPerSubnet = (1 << (32 - newPrefixLength)) - 2;
+
+    printf("\nNumber of subnets: 2\n");
+    printf("Number of hosts per subnet: %d\n", hostsPerSubnet);
+
+    for (int i = 0; i < 2; i++) {
+        unsigned int subnetNetwork = (ipInt & subnetMask) | (i << (32 - newPrefixLength));
+        unsigned int subnetBroadcast = subnetNetwork | ~newSubnetMask;
+        unsigned int firstHost = subnetNetwork + 1;
+        unsigned int lastHost = subnetBroadcast - 1;
+
+        printf("\nSubnet %d:\n", i + 1);
+        printf("Network Address: ");
+        intToIp(subnetNetwork, buffer);
+        printf("%s\n", buffer);
+        printf("Broadcast Address: ");
+        intToIp(subnetBroadcast, buffer);
+        printf("%s\n", buffer);
+        printf("Subnet Mask: ");
+        intToIp(newSubnetMask, buffer);
+        printf("%s\n", buffer);
+        printf("First Host: ");
+        intToIp(firstHost, buffer);
+        printf("%s\n", buffer);
+        printf("Last Host: ");
+        intToIp(lastHost, buffer);
+        printf("%s\n", buffer);
+    }
+    return 0;
+}
+
+Output:
+Enter IP address (e.g., 192.168.1.0): 192.168.1.0
+Enter current prefix length (e.g., 24): 24
+
+Number of subnets: 2
+Number of hosts per subnet: 126
+
+Subnet 1:
+Network Address: 192.168.1.0
+Broadcast Address: 192.168.1.127
+Subnet Mask: 255.255.255.128
+First Host: 192.168.1.1
+Last Host: 192.168.1.126
+
+Subnet 2:
+Network Address: 192.168.1.128
+Broadcast Address: 192.168.1.255
+Subnet Mask: 255.255.255.128
+First Host: 192.168.1.129
+Last Host: 192.168.1.254
+
+5)distance vector routing
+#include <stdio.h>
+#include <stdlib.h>
+
+#define INF 9999
+#define MAX_NODES 10
+
+void initialize(int numNodes, int costMatrix[MAX_NODES][MAX_NODES],
+                int distVector[MAX_NODES][MAX_NODES], int nextHop[MAX_NODES][MAX_NODES]) {
+    for (int i = 0; i < numNodes; i++) {
+        for (int j = 0; j < numNodes; j++) {
+            distVector[i][j] = costMatrix[i][j];
+            if (costMatrix[i][j] != INF && i != j) {
+                nextHop[i][j] = j;
+            } else {
+                nextHop[i][j] = -1;
+            }
+        }
+    }
+}
+
+void printRoutingTable(int numNodes, int distVector[MAX_NODES][MAX_NODES],
+                       int nextHop[MAX_NODES][MAX_NODES]) {
+    for (int i = 0; i < numNodes; i++) {
+        printf("Routing table for node %d:\n", i);
+        printf("Destination\tNext Hop\tDistance\n");
+        for (int j = 0; j < numNodes; j++) {
+            if (distVector[i][j] == INF) {
+                printf("%d\t\t-\t\tINF\n", j);
+            } else {
+                printf("%d\t\t%d\t\t%d\n", j, nextHop[i][j], distVector[i][j]);
+            }
+        }
+        printf("\n");
+    }
+}
+
+void distanceVectorRouting(int numNodes, int costMatrix[MAX_NODES][MAX_NODES],
+                           int distVector[MAX_NODES][MAX_NODES], int nextHop[MAX_NODES][MAX_NODES]) {
+    int updated;
+    do {
+        updated = 0;
+        for (int i = 0; i < numNodes; i++) {
+            for (int j = 0; j < numNodes; j++) {
+                for (int k = 0; k < numNodes; k++) {
+                    if (distVector[i][k] + distVector[k][j] < distVector[i][j]) {
+                        distVector[i][j] = distVector[i][k] + distVector[k][j];
+                        nextHop[i][j] = nextHop[i][k];
+                        updated = 1;
+                    }
+                }
+            }
+        }
+    } while (updated);
+}
+
+int main() {
+    int numNodes, costMatrix[MAX_NODES][MAX_NODES];
+    int distVector[MAX_NODES][MAX_NODES];
+    int nextHop[MAX_NODES][MAX_NODES];
+
+    printf("Enter the number of nodes: ");
+    scanf("%d", &numNodes);
+    printf("Enter the cost matrix (use %d for INF):\n", INF);
+    for (int i = 0; i < numNodes; i++) {
+        for (int j = 0; j < numNodes; j++) {
+            scanf("%d", &costMatrix[i][j]);
+        }
+    }
+
+    initialize(numNodes, costMatrix, distVector, nextHop);
+    distanceVectorRouting(numNodes, costMatrix, distVector, nextHop);
+    printRoutingTable(numNodes, distVector, nextHop);
+    return 0;
+}
+
+Output:
+Enter the number of nodes: 3
+Enter the cost matrix (use 9999 for INF):
+0 2 7
+2 0 1
+7 1 0
+Routing table for node 0:
+Destination     Next Hop        Distance
+0               -1              0
+1               1               2
+2               1               3
+
+Routing table for node 1:
+Destination     Next Hop        Distance
+0               0               2
+1               -1              0
+2               2               1
+
+Routing table for node 2:
+Destination     Next Hop        Distance
+0               1               3
+1               1               1
+2               -1              0
+
+
+6)Dijkstra's
+#include <stdio.h>
+#define INFINITY 9999
+#define MAX 10
+
+void Dijkstra(int Graph[MAX][MAX], int n, int start) {
+    int cost[MAX][MAX], distance[MAX], pred[MAX];
+    int visited[MAX], count, mindistance, nextnode, i, j;
+
+    for (i = 0; i < n; i++)
+        for (j = 0; j < n; j++)
+            cost[i][j] = (Graph[i][j] == 0) ? INFINITY : Graph[i][j];
+
+    for (i = 0; i < n; i++) {
+        distance[i] = cost[start][i];
+        pred[i] = start;
+        visited[i] = 0;
+    }
+
+    distance[start] = 0;
+    visited[start] = 1;
+    count = 1;
+
+    while (count < n - 1) {
+        mindistance = INFINITY;
+        for (i = 0; i < n; i++)
+            if (distance[i] < mindistance && !visited[i]) {
+                mindistance = distance[i];
+                nextnode = i;
+            }
+
+        visited[nextnode] = 1;
+        for (i = 0; i < n; i++)
+            if (!visited[i])
+                if (mindistance + cost[nextnode][i] < distance[i]) {
+                    distance[i] = mindistance + cost[nextnode][i];
+                    pred[i] = nextnode;
+                }
+        count++;
+    }
+
+    for (i = 0; i < n; i++)
+        if (i != start)
+            printf("\nDistance from source to %d: %d", i, distance[i]);
+}
+
+int main() {
+    int Graph[MAX][MAX] = {
+        {0, 0, 1, 2, 0, 0, 0},
+        {0, 0, 2, 0, 0, 3, 0},
+        {1, 2, 0, 1, 3, 0, 0},
+        {2, 0, 1, 0, 0, 0, 1},
+        {0, 0, 3, 0, 0, 2, 0},
+        {0, 3, 0, 0, 2, 0, 1},
+        {0, 0, 0, 1, 0, 1, 0}
+    };
+    int n = 7, u = 0;
+    Dijkstra(Graph, n, u);
+    return 0;
+}
+
+Output:
+Distance from source to 1: 3
+Distance from source to 2: 1
+Distance from source to 3: 2
+Distance from source to 4: 4
+Distance from source to 5: 4
+Distance from source to 6: 3
+
+6)Dijistra (User Input)
+#include <stdio.h>
+#define INF 9999
+
+int main() {
+    int n, g[10][10], d[10], v[10] = {0};
+    int i, j, u, min, count, start;
+
+    printf("Enter number of vertices: ");
+    scanf("%d", &n);
+
+    printf("Enter the adjacency matrix (0 for no edge):\n");
+
+    for (i = 0; i < n; i++) {
+        for (j = 0; j < n; j++) {
+            scanf("%d", &g[i][j]);
+        }
+    }
+
+    printf("Enter starting vertex: ");
+    scanf("%d", &start);
+
+    for (i = 0; i < n; i++)
+        d[i] = (g[start][i] == 0) ? INF : g[start][i];
+
+    d[start] = 0;
+    v[start] = 1;
+
+    for (count = 1; count < n; count++) {
+        min = INF;
+        u = -1;
+
+        for (i = 0; i < n; i++) {
+            if (!v[i] && d[i] < min) {
+                min = d[i];
+                u = i;
+            }
+        }
+
+        if (u == -1)
+            break;
+
+        v[u] = 1;
+
+        for (i = 0; i < n; i++) {
+            int cost = (g[u][i] == 0) ? INF : g[u][i];
+
+            if (!v[i] && min + cost < d[i])
+                d[i] = min + cost;
+        }
+    }
+
+    printf("\nShortest distances from source %d:\n", start);
+
+    for (i = 0; i < n; i++) {
+        if (d[i] == INF)
+            printf("To vertex %d: INF\n", i);
+        else
+            printf("To vertex %d: %d\n", i, d[i]);
+    }
+
+    return 0;
+}
+output :
+Enter number of vertices: 5
+
+Enter the adjacency matrix (0 for no edge):
+
+0  10  0  5  0
+10  0   1  2  0
+0   1   0  9  4
+5   2   9  0  2
+0   0   4  2  0
+
+Enter starting vertex: 0
+
+7)Leaky bucket
+#include <stdio.h>
+
+int main() {
+    int bucket_size, output_rate, input_packets, stored = 0, time;
+    printf("Enter bucket size: ");
+    scanf("%d", &bucket_size);
+    printf("Enter output rate (leak rate): ");
+    scanf("%d", &output_rate);
+    printf("Enter number of cycles (time units): ");
+    scanf("%d", &time);
+
+    while (time--) {
+        printf("\nEnter number of packets arriving: ");
+        scanf("%d", &input_packets);
+
+        if (stored + input_packets > bucket_size) {
+            printf("Bucket overflow! %d packets dropped.\n", (stored + input_packets) - bucket_size);
+            stored = bucket_size;
+        } else {
+            stored += input_packets;
+        }
+
+        printf("Packets currently in bucket: %d\n", stored);
+
+        if (stored >= output_rate) {
+            stored -= output_rate;
+            printf("Packets sent: %d\n", output_rate);
+        } else {
+            printf("Packets sent: %d\n", stored);
+            stored = 0;
+        }
+        printf("Packets left in bucket after sending: %d\n", stored);
+    }
+    return 0;
+}
+
+Output:
+Enter bucket size: 10
+Enter output rate (leak rate): 3
+Enter number of cycles (time units): 2
+
+Enter number of packets arriving: 6
+Packets currently in bucket: 6
+Packets sent: 3
+Packets left in bucket after sending: 3
+
+Enter number of packets arriving: 9
+Bucket overflow! 2 packets dropped.
+Packets currently in bucket: 10
+Packets sent: 3
+Packets left in bucket after sending: 7
+
+
+8)DNS
+i)DNS SERVER
+import java.net.*;
+import java.util.*;
+
+public class DNSServer {
+    public static void main(String[] args) throws Exception {
+        DatagramSocket s = new DatagramSocket(8053);
+        System.out.println("DNS Server started on port 8053...");
+
+        Map<String, String> dns = Map.of(
+            "www.cs.vitbhopal.ac.in", "192.168.10.10",
+            "www.yahoo.com", "98.137.11.163",
+            "www.vitbhopal.ac.in", "35.200.225.69",
+            "www.example.com", "93.184.216.34"
+        );
+
+        byte[] buf = new byte[512];
+        while (true) {
+            DatagramPacket req = new DatagramPacket(buf, buf.length);
+            s.receive(req);
+
+            String dom = new String(req.getData(), 0, req.getLength());
+            System.out.println("Query received for domain: " + dom);
+
+            String ip = dns.getOrDefault(dom, "Domain not found");
+            byte[] res = ip.getBytes();
+            s.send(new DatagramPacket(res, res.length, req.getAddress(), req.getPort()));
+            System.out.println("Response sent: " + ip);
+        }
+    }
+}
+ii)DNS CLIENT
+import java.net.*;
+import java.util.Scanner;
+
+public class DNSClient {
+    public static void main(String[] args) throws Exception {
+        DatagramSocket s = new DatagramSocket();
+        Scanner sc = new Scanner(System.in);
+
+        System.out.print("Enter domain name to resolve: ");
+        byte[] q = sc.nextLine().getBytes();
+        s.send(new DatagramPacket(q, q.length, InetAddress.getByName("localhost"), 8053));
+
+        byte[] buf = new byte[512];
+        DatagramPacket res = new DatagramPacket(buf, buf.length);
+        s.receive(res);
+
+        System.out.println("Resolved IP Address: " + new String(res.getData(), 0, res.getLength()));
+        sc.close();
+        s.close();
+    }
+}
+
+Output (DNS Server):
+DNS Server started on port 8053...
+Query received for domain: www.yahoo.com
+Response sent: 98.137.11.163
+
+Output (DNS Client):
+Enter domain name to resolve: www.yahoo.com
+Resolved IP Address: 98.137.11.163
+
+9)Ping 
+import java.net.*;
+import java.io.*;
+
+public class PingService {
+    public static void main(String[] args) {
+        if (args.length != 1) {
+            System.out.println("Usage: java PingService <hostname>");
+            return;
+        }
+        String hostname = args[0];
+        try {
+            System.out.println("Pinging " + hostname + "...");
+            InetAddress inetAddress = InetAddress.getByName(hostname);
+            boolean isReachable = inetAddress.isReachable(5000);
+            if (isReachable) {
+                System.out.println("Host " + hostname + " is reachable.");
+                System.out.println("IP Address: " + inetAddress.getHostAddress());
+            } else {
+                System.out.println("Host " + hostname + " is not reachable.");
+            }
+        } catch (UnknownHostException e) {
+            System.out.println("Unknown host: " + hostname);
+        } catch (IOException e) {
+            System.out.println("Error occurred while pinging " + hostname + ": " + e.getMessage());
+        }
+    }
+}
+
+Command:
+java PingService localhost
+
+Output:
+Pinging localhost...
+Host localhost is reachable.
+IP Address: 127.0.0.1
+
+10)XOR 0
+#include <stdio.h>
+
+int main() {
+    char str[100];
+    int i = 0;
+    printf("Enter a string: ");
+    fgets(str, sizeof(str), stdin);
+    while (str[i] != '\0') {
+        printf("%c", str[i] ^ 0);
+        i++;
+    }
+    return 0;
+}
+
+Output:
+Enter a string: Hello
+Hello
+
+11)AND or and XOR with 127
+#include <stdio.h>
+
+int main() {
+    char str[100];
+    int i;
+    printf("Enter a string: ");
+    fgets(str, sizeof(str), stdin);
+    printf("\nOriginal String: %s\n", str);
+    printf("Character\tASCII\tAND(127)\tXOR(127)\n");
+    printf("-------------\n");
+    for (i = 0; str[i] != '\0'; i++) {
+        if (str[i] == '\n')
+            continue;
+        char and_result = str[i] & 127;
+        char xor_result = str[i] ^ 127;
+        printf(" %c\t\t%d\t %d\t\t %d\n", str[i], str[i], and_result, xor_result);
+    }
+    return 0;
+}
+
+Output:
+Enter a string: Hi
+
+Original String: Hi
+
+Character       ASCII   AND(127)        XOR(127)
+-------------
+ H              72       72              55
+ i              105      105             22
+
+12)Broadcast tree
+
+import java.util.Scanner;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+
+        System.out.print("Enter number of nodes: ");
+        int n = sc.nextInt();
+
+        int[][] a = new int[n][n];
+        boolean[] visited = new boolean[n];
+        int[] queue = new int[n];
+
+        System.out.println("Enter adjacency matrix:");
+
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                a[i][j] = sc.nextInt();
+            }
+        }
+
+        System.out.print("Enter starting node (0 to " + (n-1) + "): ");
+        int start = sc.nextInt();
+
+        int front = 0, rear = 0;
+
+        queue[rear++] = start;
+        visited[start] = true;
+
+        System.out.println("Broadcast Tree:");
+
+        while (front < rear) {
+            int node = queue[front++];
+
+            for (int i = 0; i < n; i++) {
+
+                if (a[node][i] == 1 && !visited[i]) {
+
+                    visited[i] = true;
+                    queue[rear++] = i;
+
+                    System.out.println(node + " -> " + i);
+                }
+            }
+        }
+    }
+}
+
+Enter number of nodes: 4
+
+Enter adjacency matrix:
+0 1 1 0
+1 0 0 1
+1 0 0 1
+0 1 1 0
+
+Enter starting node (0 to 3): 0
+
+Broadcast Tree:
+0 -> 1
+0 -> 2
+1 -> 3
