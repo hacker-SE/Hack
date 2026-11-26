@@ -1,3 +1,4 @@
+war
 pipeline {
     agent any
 
@@ -31,6 +32,44 @@ pipeline {
         stage('package') {
             steps {
                 bat 'mvn -f SampleMavenWebProject/pom.xml package'
+            }
+        }
+    }
+}
+jar
+pipeline {
+    agent any
+
+    tools {
+        // Match the Maven tool name configured under Manage Jenkins -> Tools
+        maven 'maven_home'
+    }
+
+    stages {
+        stage('get repo and clean') {
+            steps {
+                // On Windows agents: bat 'rmdir /s /q javamavenproject'
+                sh 'rm -rf javamavenproject'
+                sh 'git clone https://github.com/sakhilesh1907/javamavenproject.git'
+                sh 'mvn -f javamavenproject/pom.xml clean'
+            }
+        }
+
+        stage('install') {
+            steps {
+                sh 'mvn -f javamavenproject/pom.xml install'
+            }
+        }
+
+        stage('test') {
+            steps {
+                sh 'mvn -f javamavenproject/pom.xml test'
+            }
+        }
+
+        stage('package') {
+            steps {
+                sh 'mvn -f javamavenproject/pom.xml package'
             }
         }
     }
