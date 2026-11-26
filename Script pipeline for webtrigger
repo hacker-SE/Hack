@@ -6,36 +6,31 @@ pipeline {
     }
 
     stages {
-        stage('Check Maven') {
+        stage('get repo and clean') {
             steps {
-                bat 'mvn -version'
-                bat 'java -version'
+                bat 'if exist SampleMavenWebProject rmdir /s /q SampleMavenWebProject'
+
+                bat 'git clone https://github.com/sakhilesh1907/SampleMavenWebProject.git'
+
+                bat 'mvn -f SampleMavenWebProject/pom.xml clean'
             }
         }
 
-        stage('Git Repo & Clean') {
+        stage('install') {
             steps {
-                bat 'if exist OLTRS rmdir /s /q OLTRS'
-                bat 'git clone https://github.com/archanareddyse/OLTRS.git'(please paste your url)
-                bat 'mvn clean -f OLTRS/pom.xml'
+                bat 'mvn -f SampleMavenWebProject/pom.xml install'
             }
         }
 
-        stage('Install') {
+        stage('test') {
             steps {
-                bat 'mvn install -f OLTRS/pom.xml'
+                bat 'mvn -f SampleMavenWebProject/pom.xml test'
             }
         }
 
-        stage('Test') {
+        stage('package') {
             steps {
-                bat 'mvn test -f OLTRS/pom.xml'
-            }
-        }
-
-        stage('Package') {
-            steps {
-                bat 'mvn package -f OLTRS/pom.xml'
+                bat 'mvn -f SampleMavenWebProject/pom.xml package'
             }
         }
     }
