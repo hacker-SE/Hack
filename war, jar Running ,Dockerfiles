@@ -1,0 +1,20 @@
+JAR
+
+FROM eclipse-temurin:17
+COPY target/*.jar app.jar
+CMD ["java","-cp","app.jar","com.example1.javamaven1.App"]
+
+sudo docker build -t myjavaapp .
+docker run -it --name java-container myjavapp:latest
+
+
+
+WAR
+FROM tomcat:10.1-jdk17-temurin
+
+COPY target/maven_web_java.war /usr/local/tomcat/webapps/maven_web_java.war
+
+EXPOSE 8089
+
+docker build -t my-maven-app .
+docker run -d -p 8089:8080 --name maven-container my-maven-app:latest
