@@ -1,0 +1,145 @@
+MAVEN JAVA AUTOMATION USING JENKINS FREESTYLE PROJECTS
+======================================================
+
+STEP 1: OPEN JENKINS
+--------------------
+1. Open http://localhost:8080 in your browser.
+2. Sign in to Jenkins.
+
+STEP 2: CONFIGURE MAVEN
+-----------------------
+1. Click Manage Jenkins.
+2. Click Tools (or Global Tool Configuration).
+3. Find Maven installations.
+4. Click Add Maven.
+5. Enter the name: MAVEN_HOME
+6. Select Install automatically, or configure the Maven installation path.
+7. Click Save.
+
+STEP 3: INSTALL REQUIRED PLUGINS
+-------------------------------
+1. Click Manage Jenkins.
+2. Click Plugins.
+3. Open Available plugins.
+4. Search for and install:
+   - Git plugin
+   - Maven Integration plugin
+   - Copy Artifact plugin
+   - Build Pipeline plugin
+5. Restart Jenkins if prompted.
+
+STEP 4: CREATE MAVENJAVA_BUILD
+------------------------------
+1. Return to the Jenkins Dashboard.
+2. Click New Item.
+3. Enter: MavenJava_Build
+4. Select Freestyle project.
+5. Click OK.
+
+CONFIGURE MAVENJAVA_BUILD
+~~~~~~~~~~~~~~~~~~~~~~~~~
+1. In the Description field, enter:
+   Java Build demo
+
+2. Under Source Code Management:
+   a. Select Git.
+   b. Enter the Git repository URL.
+   c. Under Branches to build, enter the repository's branch:
+      */main
+      or
+      */master
+
+3. Under Build Steps:
+   a. Click Add build step.
+   b. Select Invoke top-level Maven targets.
+   c. Select Maven version: MAVEN_HOME.
+   d. Enter Goals: clean
+
+   e. Click Add build step again.
+   f. Select Invoke top-level Maven targets.
+   g. Select Maven version: MAVEN_HOME.
+   h. Enter Goals: install
+
+4. Under Post-build Actions:
+   a. Click Add post-build action.
+   b. Select Archive the artifacts.
+   c. Enter Files to archive:**/*
+
+   d. Click Add post-build action again.
+   e. Select Build other projects.
+   f. Enter Projects to build:
+      MavenJava_Test
+   g. Select Trigger only if build is stable.
+
+5. Click Apply.
+6. Click Save.
+
+STEP 5: CREATE MAVENJAVA_TEST
+-----------------------------
+1. Return to the Jenkins Dashboard.
+2. Click New Item.
+3. Enter: MavenJava_Test
+4. Select Freestyle project.
+5. Click OK.
+
+CONFIGURE MAVENJAVA_TEST
+~~~~~~~~~~~~~~~~~~~~~~~~
+1. In the Description field, enter:
+   Test demo
+
+2. Under Build Environment:
+   a. Select Delete workspace before build starts.
+
+3. Under Build Steps:
+   a. Click Add build step.
+   b. Select Copy artifacts from another project.
+   c. Enter Project name:
+      MavenJava_Build
+   d.Artifacts to copy:**/*
+   d. Select Stable build only.
+
+   f. Click Add build step again.
+   g. Select Invoke top-level Maven targets.
+   h. Select Maven version: MAVEN_HOME.
+   i. Enter Goals:
+      test
+
+4. Under Post-build Actions:
+   a. Click Add post-build action.
+   b. Select Archive the artifacts.
+   c. Enter Files to archive: **/*
+
+5. Click Apply.
+6. Click Save.
+
+STEP 6: CREATE THE BUILD PIPELINE VIEW
+--------------------------------------
+1. Return to the Jenkins Dashboard.
+2. Click the + sign beside the existing views (usually beside All).
+3. Enter the view name:
+   MavenJava_Pipeline
+4. Select Build Pipeline View.
+5. Click OK or Create.
+6. Under Layout, select:
+   Based on upstream/downstream relationship
+7. Under Initial Job, select:
+   MavenJava_Build
+8. Click Apply.
+9. Click Save.
+
+STEP 7: RUN THE BUILD AND TEST PROJECTS
+---------------------------------------
+1. Open MavenJava_Build.
+2. Click Build Now.
+3. Open the running or completed build number.
+4. Click Console Output.
+5. Return to the Jenkins Dashboard.
+6. Open MavenJava_Test after it is triggered.
+7. Open its build number.
+8. Click Console Output.
+9. Open the MavenJava_Build build page and check the archived artifacts.
+10. Open the MavenJava_Test build page and check the archived artifacts.
+11. Open MavenJava_Pipeline to view the Build and Test jobs.
+
+END
+===
