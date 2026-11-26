@@ -15,17 +15,19 @@ AWS
 14.Click on add rule custom tcp, port=8080, ip=0.0.0.0/0, description=optional/tomcat. Click on save rules
 15. Come back to instances, select the created instance, in the new tab , select the browser to connect directly, or use the ssh client and run the 4th instruction.
 16.After connecting to the instance, follow the commands
-->sudo apt update
->sudo apt install docker.io
-->git clone url
-->ls(to the project folder)
-->cd project name
 
 *** If there is no war file in the repository(run the following commands before moving on 
 ->sudo apt install maven -y
 ->mvn clean package)***
 
-->sudo nano Dockerfile(Write the appropriate dockerfile from Gpt)
+->sudo apt update
+sudo apt install docker.io nano -y
+
+git clone https://github.com/hacker-SE/cs-e34.git
+cd cs-e34
+
+sudo nano Dockerfile=>(Save using ctrl+s and ctrl+x)
+
 Eg- Dockerfile 
 FROM tomcat:10.1-jdk17-temurin
 
@@ -33,12 +35,17 @@ COPY target/<placeholder>.war /usr/local/tomcat/webapps/<placeholder>.war
 
 EXPOSE 8080
 ->Then hit ctrl+s(save)-> ctrl+x(to get back)
-->sudo docker build -t <name> .
-->sudo docker run -d --name <placeholder> -p 8080:8080 <placeholder-app>
-->sudo docker ps
+sudo docker build -t test .
+
+sudo docker run -d -p 8080:8080 --name test-app test:latest
+
+sudo docker ps
+sudo docker logs test-app
 
 To verify if the if the application is running:
 1.Go back to instances.
 2.Click on instance id.
 3.Copy the machine's public IPV4 address
-Click on http://YOUR_PUBLIC_IP:8080/<placeholder>/
+
+
+Click on http://3.87.95.198:8080/maven_web_java/
