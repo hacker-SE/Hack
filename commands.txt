@@ -32,3 +32,12 @@ git remote remove origin
 git remote add origin <YOUR_REPOSITIORY_NAME>
 
 git push -u origin main
+
+=======POLL SCM======
+git init
+git add .
+echo Second update for Jenkins Poll SCM > demo.txt
+git status
+git add demo.txt
+git commit -m "Added demo file"
+git push origin master
