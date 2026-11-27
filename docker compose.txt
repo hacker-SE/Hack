@@ -45,6 +45,7 @@ services:
     container_name: mytomcat
     ports:
       - "8097:8080"
+    command: sh -c "ln -s /usr/local/tomcat/webapps.dist/ROOT /usr/local/tomcat/webapps/ROOT && catalina.sh run"
     depends_on:
       - db
 
