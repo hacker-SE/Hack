@@ -1,8 +1,10 @@
 mkdir external
 cd external 
 
-notepad docker-compose.yml
-in notepad for wordpress:
+notepad docker-compose.yml 
+
+->in notepad for wordpress:
+
 services:
 
   wordpress:
@@ -32,8 +34,10 @@ services:
       - db_data:/var/lib/mysql
 
 volumes:
-  db_data:
-in notepad for tomcat:
+  db_data: 
+
+->in notepad for tomcat:
+
 services:
 
   tomcat:
@@ -59,7 +63,8 @@ services:
 
 volumes:
   mysql_data:
-in notepad for ngnix and tomcat:
+
+->in notepad for ngnix and tomcat:
 
 services:
 
@@ -96,7 +101,7 @@ volumes:
   mysql_data:
 
 
-in notepad for nagios:
+->in notepad for nagios:
 
 services:
   nagios:
