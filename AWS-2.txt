@@ -1,0 +1,286 @@
+
+AWS EC2 + DOCKER + TOMCAT DEPLOYMENT
+====================================
+
+PHASE 1: LOGIN TO AWS ACADEMY
+-----------------------------
+
+1. Open:
+   https://awsacademy.instructure.com/login/canvas
+
+2. Login using AWS Academy credentials.
+3. Open your course.
+4. Click Modules.
+5. Launch Learner Lab.
+6. Click Start Lab.
+7. Wait until the indicator turns green.
+8. Click the green AWS button.
+
+
+PHASE 2: CREATE EC2 INSTANCE
+----------------------------
+
+1. Search EC2 in AWS console.
+2. Click Launch instance.
+
+Enter the following:
+
+Name: Tomcat-Server
+AMI: Ubuntu Server 24.04 LTS
+Instance type: t3.micro (if available)
+Key pair: Create new key pair
+Key name: tomcat-key
+Key format: .pem
+
+3. Download and save the key pair.
+4. Under Network settings:
+   - Enable Auto-assign public IP.
+   - Allow SSH traffic.
+5. Click Launch instance.
+6. Wait until instance status is Running.
+
+
+PHASE 3: CONFIGURE SECURITY GROUP
+---------------------------------
+
+1. Go to EC2 -> Instances.
+2. Select your instance.
+3. Click Security tab.
+4. Click Security Group.
+5. Click Edit inbound rules.
+6. Click Add rule.
+
+Enter:
+
+Type: Custom TCP
+Protocol: TCP
+Port range: 8080
+Source: Anywhere-IPv4
+Source IP: 0.0.0.0/0
+Description: Tomcat
+
+7. Click Save rules.
+
+
+PHASE 4: CONNECT TO EC2
+-----------------------
+
+1. Go to EC2 -> Instances.
+2. Select your instance.
+3. Click Connect.
+4. Select EC2 Instance Connect.
+5. Click Connect.
+
+Ubuntu terminal will open.
+
+
+PHASE 5: INSTALL REQUIRED SOFTWARE
+----------------------------------
+
+COMMAND 1:
+sudo apt update
+
+COMMAND 2:
+sudo apt install docker.io git nano -y
+
+COMMAND 3:
+sudo docker --version
+
+
+PHASE 6: CLONE GITHUB REPOSITORY
+--------------------------------
+
+COMMAND 4:
+git clone https://github.com/hacker-SE/cs-e34.git
+
+COMMAND 5:
+cd cs-e34
+
+COMMAND 6:
+ls
+
+
+PHASE 7: GENERATE WAR FILE
+--------------------------
+
+Check whether WAR file exists:
+
+ls target/*.war
+
+If WAR file does not exist, execute:
+
+COMMAND 7:
+sudo apt install maven -y
+
+COMMAND 8:
+mvn clean package
+
+Wait until BUILD SUCCESS appears.
+
+COMMAND 9:
+ls target/
+
+Expected WAR file:
+maven_web_java.war
+
+NOTE:
+If your WAR filename is different, use the actual filename
+in the Dockerfile below.
+
+
+PHASE 8: CREATE DOCKERFILE
+--------------------------
+
+COMMAND 10:
+sudo nano Dockerfile
+
+Enter the following:
+
+FROM tomcat:10.1-jdk17-temurin
+
+COPY target/maven_web_java.war /usr/local/tomcat/webapps/maven_web_java.war
+
+EXPOSE 8080
+
+Save the file:
+
+1. Press Ctrl + O.
+2. Press Enter.
+3. Press Ctrl + X.
+
+COMMAND 11:
+cat Dockerfile
+
+
+PHASE 9: BUILD DOCKER IMAGE
+---------------------------
+
+COMMAND 12:
+sudo docker build -t test .
+
+Wait until the image is successfully built.
+
+
+PHASE 10: RUN DOCKER CONTAINER
+------------------------------
+
+COMMAND 13:
+sudo docker run -d -p 8080:8080 --name test-app test:latest
+
+This maps EC2 port 8080 to Tomcat container port 8080.
+
+
+PHASE 11: VERIFY DOCKER CONTAINER
+---------------------------------
+
+COMMAND 14:
+sudo docker ps
+
+Check that test-app is running (status Up).
+
+COMMAND 15:
+sudo docker logs test-app
+
+COMMAND 16:
+curl http://localhost:8080/maven_web_java/
+
+
+PHASE 12: OPEN APPLICATION IN BROWSER
+-------------------------------------
+
+1. Go to AWS EC2 -> Instances.
+2. Select your instance.
+3. Copy Public IPv4 address.
+4. Open a new browser tab.
+
+Enter:
+
+http://YOUR_PUBLIC_IP:8080/maven_web_java/
+
+Example used in our practical:
+
+http://34.233.119.180:8080/maven_web_java/
+
+EXPECTED OUTPUT:
+
+Hello World!
+
+Your Java Maven application is now deployed successfully
+using AWS EC2, Docker and Apache Tomcat.
+
+
+PHASE 13: WHEN YOU REOPEN AWS LATER
+-----------------------------------
+
+You do not need to repeat all installation commands.
+
+1. Login to AWS Academy.
+2. Start Learner Lab.
+3. Open EC2 -> Instances.
+4. Check that your instance is Running.
+5. Connect using EC2 Instance Connect.
+
+Execute:
+
+sudo docker ps
+
+If test-app is already running, no further command is needed.
+
+If the container is stopped, execute:
+
+sudo docker start test-app
+
+Get the current Public IPv4 address.
+
+Open:
+
+http://YOUR_PUBLIC_IP:8080/maven_web_java/
+
+
+IMPORTANT NOTES
+---------------
+
+1. Closing browser tabs does not stop your EC2 instance.
+2. Disconnecting the terminal does not stop Docker.
+3. Do not terminate the EC2 instance if you want to
+   preserve your work.
+4. Stopping and restarting EC2 may change its public IP.
+5. Learner Lab expiry or cleanup may remove resources.
+6. If your container is already running, do not create
+   another container with the same name.
+7. Port 8080 must be allowed in the security group.
+8. Use /maven_web_java/ to access your application.
+   The Tomcat root URL may show a 404 page.
+
+
+FINAL RESULT
+------------
+
+Java Maven Project
+       |
+       v
+GitHub Repository
+       |
+       v
+Maven WAR File
+       |
+       v
+Dockerfile
+       |
+       v
+Docker Image
+       |
+       v
+Docker Container
+       |
+       v
+Apache Tomcat
+       |
+       v
+AWS EC2 Public IP
+       |
+       v
+BROWSER: HELLO WORLD!
+
+
+PRACTICAL COMPLETED SUCCESSFULLY.
